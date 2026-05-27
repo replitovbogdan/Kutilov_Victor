@@ -23,14 +23,10 @@ deploymentTarget = "gce"
 
 [[ports]]
 localPort = 3000
-externalPort = 80
 
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 9090
 
 # Включение экспертного режима для расширенного управления агентом
 [agent]
