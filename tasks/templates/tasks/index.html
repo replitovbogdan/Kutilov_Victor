@@ -171,6 +171,7 @@
             <h3>📤 Загрузите файлы для обработки</h3>
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
+                <input type="hidden" name="_auth_token" value="{{ auth_token }}">
                 <div class="file-input-wrapper">
                     <!-- multiple — позволяет выбрать несколько файлов сразу -->
                     <input type="file" name="files" multiple accept=".json,.csv,.txt,.xyz">

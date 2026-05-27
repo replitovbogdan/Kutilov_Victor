@@ -26,7 +26,10 @@ localPort = 3000
 
 [[ports]]
 localPort = 5000
-externalPort = 80
+externalPort = 5000
+
+[[ports]]
+localPort = 9090
 
 # Включение экспертного режима для расширенного управления агентом
 [agent]

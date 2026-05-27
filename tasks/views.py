@@ -1,17 +1,49 @@
 from django.shortcuts import render
-from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
+from django.contrib.auth import authenticate, login as auth_login
+from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
+from django.core import signing
 from django.conf import settings
 from .utils.processor import process_files, create_test_files, generate_charts
 import base64
 import os
 import shutil
 
+TOKEN_SALT = 'microservice-auth-token'
+
+
+def _make_token(user):
+    return signing.dumps({'uid': user.pk}, salt=TOKEN_SALT)
+
+
+def _user_from_token(token):
+    try:
+        data = signing.loads(token, salt=TOKEN_SALT, max_age=86400 * 7)
+        return User.objects.get(pk=data['uid'])
+    except Exception:
+        return None
+
 
 @csrf_exempt
 def index(request):
-    # --- Login handling (no redirect, no cookies needed) ---
-    if not request.user.is_authenticated:
+    auth_token = None
+    authed_user = None
+
+    # 1. Check session (works when cookies available)
+    if request.user.is_authenticated:
+        authed_user = request.user
+        auth_token = _make_token(authed_user)
+
+    # 2. Check signed token in POST / GET
+    if authed_user is None:
+        token_raw = request.POST.get('_auth_token') or request.GET.get('_auth_token')
+        if token_raw:
+            authed_user = _user_from_token(token_raw)
+            if authed_user:
+                auth_token = token_raw
+
+    # 3. Try login form credentials
+    if authed_user is None:
         if request.method == 'POST' and 'username' in request.POST:
             user = authenticate(
                 request,
@@ -20,13 +52,14 @@ def index(request):
             )
             if user is not None:
                 auth_login(request, user)
-                # fall through to render the main page immediately
+                authed_user = user
+                auth_token = _make_token(user)
             else:
                 return render(request, 'registration/login.html', {'error': True})
         else:
             return render(request, 'registration/login.html', {'error': False})
 
-    # --- Main microservice page (user is authenticated) ---
+    # --- User authenticated: show main page ---
     results = None
     charts = {}
 
@@ -69,6 +102,8 @@ def index(request):
         'results': results,
         'charts': charts,
         'full_name': 'Кутилов Б.А.',
+        'auth_token': auth_token,
+        'username': authed_user.username,
     })
 
 
