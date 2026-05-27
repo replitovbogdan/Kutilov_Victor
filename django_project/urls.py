@@ -8,36 +8,17 @@
 # ---------------------------------------------------------------
 # БЛОК ИМПОРТОВ
 # ---------------------------------------------------------------
-from django.contrib import admin                          # Встроенная административная панель
-from django.urls import path, include                     # path — одиночный маршрут, include — подключение URL другого приложения
-from django.conf import settings                          # Настройки проекта (пути к медиафайлам)
-from django.conf.urls.static import static               # Функция для раздачи медиафайлов в DEBUG-режиме
-from django.contrib.auth import views as auth_views      # Встроенные Django-представления для входа/выхода
+from django.contrib import admin
+from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
+from django.contrib.auth import views as auth_views
+from tasks import auth_views as custom_auth
 
-# ---------------------------------------------------------------
-# БЛОК МАРШРУТОВ URL
-# Каждый элемент urlpatterns связывает URL-адрес с обработчиком
-# ---------------------------------------------------------------
 urlpatterns = [
-
-    # --- Административная панель Django ---
     path('admin/', admin.site.urls),
-    # ^ Доступна по адресу /admin/ — управление пользователями, базой данных
-
-    # --- Главное приложение микросервиса ---
     path('', include('tasks.urls')),
-    # ^ Все запросы к корню сайта передаются в tasks/urls.py
-
-    # --- Аутентификация: вход в систему ---
-    path('login/', auth_views.LoginView.as_view(
-        template_name='registration/login.html'  # Кастомный шаблон страницы входа
-    ), name='login'),
-    # ^ GET /login/ — показывает форму входа; POST /login/ — проверяет логин/пароль
-
-    # --- Аутентификация: выход из системы ---
-    path('logout/', auth_views.LogoutView.as_view(
-        next_page='/login/'  # После выхода перенаправляет на страницу входа
-    ), name='logout'),
-
+    path('login/', custom_auth.login_view, name='login'),
+    path('logout/', custom_auth.logout_view, name='logout'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 # ^ Добавляет маршруты для раздачи медиафайлов (работает только при DEBUG=True)
