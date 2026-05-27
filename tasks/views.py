@@ -1,5 +1,5 @@
-from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
 from django.core.files.storage import default_storage
 from django.conf import settings
 from .utils.processor import process_files, create_test_files, generate_charts
@@ -109,7 +109,6 @@ def index(request):
         else:
             print("Тестовые файлы не найдены!")
 
-    # Ваша фамилия и инициалы
     full_name = "Кутилов Б.А."
 
     print(f"Передаем в шаблон: results={results is not None}, charts={len(charts)} графиков")
