@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<!-- ============================================================
+     ФАЙЛ: login.html
+     НАЗНАЧЕНИЕ: Страница аутентификации пользователя.
+     Пользователь вводит логин и пароль для входа в микросервис.
+     При ошибке отображается сообщение. После успешного входа
+     Django перенаправляет на главную страницу (/).
+     ============================================================ -->
+<html lang="ru">
+
+<!-- ============================================================
+     БЛОК МЕТАДАННЫХ И СТИЛЕЙ ОФОРМЛЕНИЯ
+     Кодировка, адаптивный viewport, встроенные CSS-правила.
+     Все стили хранятся внутри файла для автономности страницы.
+     ============================================================ -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход - Микросервис обработки файлов</title>
+    <style>
+
+        /* ---- Сброс стандартных отступов браузера ---- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        /* ---- Фон страницы: фиолетовый градиент, центрирование по вертикали ---- */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* ---- Основной контейнер формы: белая карточка с тенью ---- */
+        .container {
+            max-width: 450px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        /* ---- Стили шапки карточки (тёмный заголовок) ---- */
+        .header {
+            background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+            color: white;
+            padding: 30px 40px;
+            text-align: center;
+        }
+        .header h1 { font-size: 24px; margin-bottom: 10px; }
+        .header h1 span { color: #9f7aea; }
+        .header p { color: #a0aec0; font-size: 14px; }
+
+        /* ---- Стили основной зоны с формой ---- */
+        .content { padding: 40px; }
+
+        /* ---- Стили полей формы (метка + поле ввода) ---- */
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; color: #4a5568; font-weight: 500; margin-bottom: 8px; }
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #9f7aea;
+            box-shadow: 0 0 0 3px rgba(159,122,234,0.1);
+        }
+
+        /* ---- Стиль кнопки «Войти в систему» ---- */
+        button {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            transition: transform 0.2s;
+        }
+        button:hover { transform: scale(1.02); }
+
+        /* ---- Стиль блока ошибки (красный фон) ---- */
+        .error-message {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 10px 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        /* ---- Стиль подвала карточки ---- */
+        .footer { background: #f7fafc; padding: 20px; text-align: center; font-size: 12px; color: #718096; }
+
+    </style>
+</head>
+
+<body>
+    <div class="container">
+
+        <!-- ====================================================
+             БЛОК ШАПКИ СТРАНИЦЫ
+             Отображает название микросервиса и имя автора.
+             Виден пользователю до ввода данных.
+             ==================================================== -->
+        <div class="header">
+            <h1>📁 Микросервис обработки файлов <span>Кутилов Б.А.</span></h1>
+            <p>Загрузка и анализ JSON/CSV файлов с визуализацией результатов</p>
+        </div>
+
+        <!-- ====================================================
+             БЛОК АУТЕНТИФИКАЦИИ (ФОРМА ВХОДА)
+             Содержит:
+             — блок ошибки (показывается только при неверном пароле);
+             — поле логина (username);
+             — поле пароля (password);
+             — кнопку отправки формы.
+             Форма отправляется POST-запросом на /login/.
+             Django проверяет учётные данные через встроенную
+             систему аутентификации (contrib.auth).
+             ==================================================== -->
+        <div class="content">
+
+            <!-- Блок сообщения об ошибке входа -->
+            <!-- Отображается только если Django вернул ошибку (form.errors) -->
+            {% if form.errors %}
+                <div class="error-message">
+                    ❌ Неверное имя пользователя или пароль
+                </div>
+            {% endif %}
+
+            <!-- Форма ввода учётных данных -->
+            <form method="post" action="/login/">
+                {% csrf_token %}
+                <!-- ^ CSRF-токен: скрытое поле защиты от межсайтовых атак -->
+
+                <!-- Поле: имя пользователя -->
+                <div class="form-group">
+                    <label>👤 Имя пользователя</label>
+                    <input type="text" name="username" placeholder="Введите логин"
+                           required autofocus>
+                    <!-- autofocus: курсор автоматически попадает в это поле при открытии -->
+                </div>
+
+                <!-- Поле: пароль -->
+                <div class="form-group">
+                    <label>🔒 Пароль</label>
+                    <input type="password" name="password" placeholder="Введите пароль"
+                           required autocomplete="current-password">
+                    <!-- type="password": символы скрыты точками -->
+                </div>
+
+                <!-- Кнопка отправки формы -->
+                <button type="submit">🚀 Войти в систему</button>
+            </form>
+
+        </div>
+
+        <!-- ====================================================
+             БЛОК ПОДВАЛА СТРАНИЦЫ
+             Отображает информацию об авторе и годе разработки.
+             ==================================================== -->
+        <div class="footer">
+            <p>Микросервис обработки файлов | Разработано: Кутилов Б.А. | © 2025</p>
+        </div>
+
+    </div>
+</body>
+</html>

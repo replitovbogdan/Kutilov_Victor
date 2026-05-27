@@ -1,0 +1,72 @@
+# Запуск Django сервера на порту 3000 через Python
+run = ["python", "manage.py", "runserver", "0.0.0.0:3000"]
+# Точка входа в приложение
+entrypoint = "manage.py"
+modules = ["python-3.11"]
+
+# Скрытые папки и файлы (не отображаются в файловом менеджере)
+hidden = [".pythonlibs"]
+
+# Канал Nix пакетов для установки дополнительных зависимостей
+[nix]
+channel = "stable-24_05"
+packages = ["cairo", "ffmpeg-full", "freetype", "ghostscript", "glibcLocales", "gobject-introspection", "gtk3", "pkg-config", "qhull", "tcl", "tk"]
+
+# Настройки юнит-тестирования
+[unitTest]
+language = "python3"
+
+# Настройки развертывания приложения
+[deployment]
+run = ["python", "manage.py", "runserver", "0.0.0.0:3000"]
+deploymentTarget = "gce"
+
+[[ports]]
+localPort = 3000
+externalPort = 80
+
+[[ports]]
+localPort = 5000
+externalPort = 8000
+
+[[ports]]
+localPort = 8000
+externalPort = 3001
+
+[[ports]]
+localPort = 9000
+externalPort = 9000
+
+[[ports]]
+localPort = 9090
+
+# Включение экспертного режима для расширенного управления агентом
+[agent]
+expertMode = true
+stack = "BEST_EFFORT_FALLBACK"
+
+# Настройки воркфлоу для автоматического запуска проекта
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Start application"
+
+[[workflows.workflow]]
+name = "Start application"
+author = "agent"
+
+# Тип вывода воркфлоу — веб-интерфейс
+[workflows.workflow.metadata]
+outputType = "webview"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "poetry run python manage.py runserver 0.0.0.0:5000"
+waitForPort = 5000
